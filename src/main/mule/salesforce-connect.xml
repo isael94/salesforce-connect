@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="d24b0d47-43e7-453d-938d-5c094c7b1981" >
+		<salesforce:basic-connection username="javier.isael.g@gmail.com" password="September2021" securityToken="fmg48rNfz7gF94BqfHdMhua2" />
+	</salesforce:sfdc-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="48302ba2-065d-41c6-bcb4-117c5cc774b9" >
+		<db:my-sql-connection host="us-cdbr-iron-east-05.cleardb.net" port="3306" user="b742ac530857e0" password="4ba5f99e" database="heroku_e0d2d178c91de92" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="3b8bd564-cebc-40e6-bd6d-3a483e5f3af9" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="salesforce-connectFlow" doc:id="79134d89-c163-4bf1-951e-01749dee84b3" >
+		<http:listener doc:name="GET /item" doc:id="5829d389-44d7-4f41-819a-52696189bbe4" config-ref="HTTP_Listener_config" path="/item"/>
+		<db:select doc:name="Select" doc:id="8b1beafd-9ded-4e27-a133-97f41e03770a" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM account]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="09c312b6-62b3-4d37-b921-e334047bcc4e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="salesforce-connectFlow1" doc:id="dc5baf19-bfd3-4a7b-92a4-ccdc288d66e0" >
+		<http:listener doc:name="GET /item/{id}" doc:id="7978ca0b-0740-434f-a84e-ac4c21295be7" config-ref="HTTP_Listener_config" path="/item/{id}"/>
+		<db:select doc:name="Select" doc:id="da171725-e434-41d9-9d64-2689f7aa176c" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM account where account_type = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="ec4b0392-9d44-4d83-bd7d-cf6e2a251bab" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
